@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions, Platform, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
@@ -9,13 +9,17 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import Layout from '../../components/Layout';
 import SocialLogins from '../../components/SocialLogins';
-import { ShieldCheck, ArrowRight } from 'lucide-react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { Activity, ArrowRight } from 'lucide-react-native';
+
+const { height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { login } = useAuth();
+  const { colors, isDark } = useTheme();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,109 +44,162 @@ const LoginScreen = () => {
 
   return (
     <Layout>
-      <GlassCard>
-        <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <ShieldCheck color="#fff" size={24} />
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+        <View style={styles.headerContainer}>
+           <View style={[styles.logoRing, { borderColor: colors.primary + '30', backgroundColor: colors.primary + '10' }]}>
+             <ArrowRight color={colors.primary} size={26} strokeWidth={2} />
+           </View>
+           <Text style={[styles.brandTitle, { color: '#fff' }]}>Med<Text style={[styles.brandTitleBold, { color: colors.primary }]}>Point</Text></Text>
+           <Text style={[styles.welcomeText, { color: '#fff' }]}>Welcome Back</Text>
+        </View>
+
+        <GlassCard style={styles.formCard}>
+          <Text style={styles.cardSubtitle}>Sign in to access your medical dashboard.</Text>
+          
+          <View style={styles.inputSection}>
+            <Input 
+              label="Email Address" 
+              placeholder="doctor@medpoint.com" 
+              keyboardType="email-address" 
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <Input 
+              label="Password" 
+              placeholder="••••••••" 
+              secureTextEntry 
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            <TouchableOpacity 
+              style={styles.forgotBtn}
+              onPress={() => navigation.navigate('ForgotPassword')}
+            >
+              <Text style={[styles.forgotText, { color: colors.primary }]}>Forgot password?</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Access your account securely and continue your journey.</Text>
-        </View>
 
-        <Input 
-          label="Email Address" 
-          placeholder="name@company.com" 
-          keyboardType="email-address" 
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <Input 
-          label="Password" 
-          placeholder="••••••••" 
-          secureTextEntry 
-          value={password}
-          onChangeText={setPassword}
-        />
+          <Button 
+            variant="premium"
+            title={loading ? "Checking..." : "Secure Sign In"} 
+            icon={<ArrowRight color="#fff" size={20} strokeWidth={1.5} />}
+            onPress={handleLogin} 
+            disabled={loading}
+          />
 
-        <View style={styles.forgotContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-            <Text style={styles.forgotText}>FORGOT PASSWORD?</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>QUICK LOGIN</Text>
+            <View style={styles.divider} />
+          </View>
 
-        <Button 
-          title={loading ? "Authenticating..." : "Secure Sign In"} 
-          icon={<ArrowRight color="#fff" size={18} />}
-          onPress={handleLogin} 
-          disabled={loading}
-        />
+          <SocialLogins />
 
-        <SocialLogins />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>New here? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.link}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
-      </GlassCard>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>New here? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={[styles.link, { color: colors.primary }]}>Join MedPoint</Text>
+            </TouchableOpacity>
+          </View>
+        </GlassCard>
+      </View>
     </Layout>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: 32,
+  container: {
+    flex: 1,
+    justifyContent: 'center',
   },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#4f46e5',
-    borderRadius: 12,
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: height < 700 ? 10 : 20,
+  },
+  logoRing: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(99, 102, 241, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.2)',
+    marginBottom: 6,
   },
-  title: {
+  brandTitle: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 18,
+    fontWeight: '300',
+    letterSpacing: 1,
+  },
+  brandTitleBold: {
+    fontWeight: '800',
+    color: '#6366f1',
+  },
+  welcomeText: {
+    color: '#fff',
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 8,
+    marginTop: 2,
   },
-  subtitle: {
+  formCard: {
+    borderRadius: 30,
+    paddingVertical: height < 700 ? 15 : 25,
+    paddingHorizontal: 20,
+  },
+  cardSubtitle: {
     color: '#94a3b8',
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: '85%',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: height < 700 ? 10 : 15,
   },
-  forgotContainer: {
-    alignItems: 'flex-end',
-    marginBottom: 24,
+  inputSection: {
+    marginBottom: 10,
+  },
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    marginTop: -5,
+    marginBottom: 5,
   },
   forgotText: {
-    color: '#94a3b8',
-    fontSize: 10,
-    fontWeight: '700',
+    color: '#6366f1',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: height < 700 ? 10 : 15,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  dividerText: {
+    color: '#475569',
+    fontSize: 9,
+    fontWeight: '800',
+    marginHorizontal: 12,
     letterSpacing: 1,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 32,
+    marginTop: height < 700 ? 10 : 15,
   },
   footerText: {
-    color: '#94a3b8',
-    fontSize: 12,
+    color: '#64748b',
+    fontSize: 13,
   },
   link: {
-    color: '#818cf8', // indigo-400
-    fontSize: 12,
+    color: '#6366f1',
+    fontSize: 13,
     fontWeight: '700',
   },
 });

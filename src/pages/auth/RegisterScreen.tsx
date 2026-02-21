@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions, Platform, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
@@ -9,14 +9,17 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import Layout from '../../components/Layout';
 import SocialLogins from '../../components/SocialLogins';
-import { ShieldCheck, UserPlus } from 'lucide-react-native';
-import { ScrollView } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { Activity, UserPlus } from 'lucide-react-native';
+
+const { height } = Dimensions.get('window');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { register } = useAuth();
+  const { colors, isDark } = useTheme();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -40,11 +43,9 @@ const RegisterScreen = () => {
       let message = 'Registration failed. Please try again.';
       
       if (error.response) {
-        // Server-side error
         message = error.response.data?.message || message;
       } else if (error.request) {
-        // Network error (timeout or unreachable)
-        message = 'Cannot connect to server. If on a physical device, please check your MACHINE_IP in src/constants/Config.ts';
+        message = 'Cannot connect to server. Check your local connection.';
       } else {
         message = error.message || message;
       }
@@ -57,44 +58,47 @@ const RegisterScreen = () => {
 
   return (
     <Layout>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <GlassCard>
-          <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <ShieldCheck color="#fff" size={24} />
-            </View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join us today and experience the future of secure apps.</Text>
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+        <View style={styles.headerContainer}>
+           <View style={[styles.logoRing, { borderColor: colors.primary + '30', backgroundColor: colors.primary + '10' }]}>
+             <UserPlus color={colors.primary} size={26} strokeWidth={2} />
+           </View>
+           <Text style={[styles.brandTitle, { color: '#fff' }]}>Med<Text style={[styles.brandTitleBold, { color: colors.primary }]}>Point</Text></Text>
+           <Text style={[styles.welcomeText, { color: '#fff' }]}>Create Account</Text>
+        </View>
+
+        <GlassCard style={styles.formCard}>
+          <Text style={styles.cardSubtitle}>Join the medical community today.</Text>
+          
+          <View style={styles.inputSection}>
+            <Input 
+              label="Full Name" 
+              placeholder="Dr. John Doe" 
+              value={username}
+              onChangeText={setUsername}
+            />
+            <Input 
+              label="Email Address" 
+              placeholder="name@medpoint.com" 
+              keyboardType="email-address" 
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <Input 
+              label="Password" 
+              placeholder="••••••••" 
+              secureTextEntry 
+              value={password}
+              onChangeText={setPassword}
+            />
           </View>
 
-          <Input 
-            label="Username" 
-            placeholder="johndoe" 
-            value={username}
-            onChangeText={setUsername}
-          />
-          <Input 
-            label="Email Address" 
-            placeholder="name@company.com" 
-            keyboardType="email-address" 
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-          <Input 
-            label="Password" 
-            placeholder="••••••••" 
-            secureTextEntry 
-            value={password}
-            onChangeText={setPassword}
-          />
-
           <Button 
-            title={loading ? "Registering..." : "Get Started"} 
-            icon={<UserPlus color="#fff" size={18} />}
+            variant="premium"
+            title={loading ? "Joining..." : "Join MedPoint"} 
+            icon={<UserPlus color="#fff" size={20} strokeWidth={1.5} />}
             onPress={handleRegister} 
             disabled={loading}
           />
@@ -102,65 +106,80 @@ const RegisterScreen = () => {
           <SocialLogins />
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={styles.footerText}>Already member? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.link}>Sign In</Text>
+              <Text style={[styles.link, { color: colors.primary }]}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </GlassCard>
-      </ScrollView>
+      </View>
     </Layout>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-    width: '100%',
-    paddingVertical: 10,
+  container: {
+    flex: 1,
     justifyContent: 'center',
   },
-  header: {
-    marginBottom: 20,
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: height < 700 ? 10 : 15,
   },
-  iconContainer: {
+  logoRing: {
     width: 48,
     height: 48,
-    backgroundColor: '#4f46e5',
-    borderRadius: 12,
+    borderRadius: 24,
+    backgroundColor: 'rgba(99, 102, 241, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.2)',
+    marginBottom: 6,
   },
-  title: {
+  brandTitle: {
     color: '#fff',
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontSize: 16,
+    fontWeight: '300',
+    letterSpacing: 1,
   },
-  subtitle: {
+  brandTitleBold: {
+    fontWeight: '800',
+    color: '#6366f1',
+  },
+  welcomeText: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  formCard: {
+    borderRadius: 30,
+    paddingVertical: height < 700 ? 15 : 20,
+    paddingHorizontal: 20,
+  },
+  cardSubtitle: {
     color: '#94a3b8',
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: '85%',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: height < 700 ? 10 : 15,
+  },
+  inputSection: {
+    marginBottom: 8,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: height < 700 ? 10 : 15,
   },
   footerText: {
-    color: '#94a3b8',
-    fontSize: 12,
+    color: '#64748b',
+    fontSize: 13,
   },
   link: {
-    color: '#818cf8',
-    fontSize: 12,
+    color: '#6366f1',
+    fontSize: 13,
     fontWeight: '700',
   },
 });

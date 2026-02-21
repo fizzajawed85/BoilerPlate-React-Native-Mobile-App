@@ -42,9 +42,9 @@ const SocialLogins = () => {
       </View>
 
       <View style={styles.grid}>
-        {socialButtons.map((social, index) => (
+        {socialButtons.map((social) => (
           <TouchableOpacity
-            key={index}
+            key={social.label}
             style={styles.socialBtn}
             activeOpacity={0.7}
           >

@@ -1,6 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { View, StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -9,26 +10,28 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { colors, isDark } = useTheme();
+
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       
       {/* Background Gradients (Blobs) */}
-      <View style={styles.blob1}>
+      <View style={[styles.blob1, { opacity: isDark ? 0.6 : 0.2 }]}>
         <LinearGradient
-          colors={['rgba(79, 70, 229, 0.4)', 'transparent']}
+          colors={[colors.primary + '60', 'transparent']}
           style={styles.gradientBlob}
         />
       </View>
       
-      <View style={styles.blob2}>
+      <View style={[styles.blob2, { opacity: isDark ? 0.6 : 0.2 }]}>
         <LinearGradient
-          colors={['rgba(30, 41, 59, 0.4)', 'transparent']}
+          colors={[isDark ? 'rgba(30, 41, 59, 0.4)' : colors.primary + '20', 'transparent']}
           style={styles.gradientBlob}
         />
       </View>
 
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.content}>
           {children}
         </View>
@@ -40,7 +43,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a', // slate-900
     overflow: 'hidden',
   },
   safeArea: {
@@ -48,8 +50,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0, // Removed global padding to let screens manage their own spacing
     zIndex: 10,
   },
   blob1: {
@@ -59,7 +60,6 @@ const styles = StyleSheet.create({
     width: width,
     height: width,
     borderRadius: width / 2,
-    opacity: 0.6,
   },
   blob2: {
     position: 'absolute',
@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     width: width,
     height: width,
     borderRadius: width / 2,
-    opacity: 0.6,
   },
   gradientBlob: {
     flex: 1,

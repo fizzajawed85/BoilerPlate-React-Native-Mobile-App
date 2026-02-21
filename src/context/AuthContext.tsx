@@ -5,6 +5,7 @@ import { User } from "../types/auth";
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   loading: boolean;
   login: (data: any) => Promise<any>;
   register: (data: any) => Promise<any>;
@@ -21,6 +22,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +30,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const storedAuth = await SecureStore.getItemAsync("auth");
         if (storedAuth) {
-          setUser(JSON.parse(storedAuth).user);
+          const { user, token } = JSON.parse(storedAuth);
+          setUser(user);
+          setToken(token);
         }
       } catch (error) {
         console.error("Failed to load auth data:", error);
@@ -43,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const res = await authService.loginUser(data);
     await SecureStore.setItemAsync("auth", JSON.stringify(res));
     setUser(res.user);
+    setToken(res.token);
     return res;
   };
 
@@ -54,10 +59,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     await SecureStore.deleteItemAsync("auth");
     setUser(null);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
